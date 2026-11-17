@@ -26,7 +26,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5500",
-        "https://your-site.netlify.app"
+        "https://flourishing-quokka-33cf66.netlify.app"
     ],
     allow_credentials=False,
     allow_methods=["GET", "POST", "PATCH", "DELETE"],
