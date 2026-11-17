@@ -1,0 +1,414 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shortly - URL Shortener</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Inter, Arial, sans-serif;
+            background: #0f172a;
+            color: white;
+            min-height: 100vh;
+        }
+
+        header {
+            max-width: 1050px;
+            margin: auto;
+            padding: 28px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 25px;
+            font-weight: 800;
+            color: #60a5fa;
+        }
+
+        header a {
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        main {
+            max-width: 850px;
+            margin: 70px auto;
+            padding: 20px;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .hero h1 {
+            font-size: clamp(36px, 7vw, 55px);
+            margin-bottom: 15px;
+        }
+
+        .hero h1 span {
+            color: #60a5fa;
+        }
+
+        .hero p {
+            color: #94a3b8;
+            line-height: 1.7;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 28px;
+            border-radius: 16px;
+            border: 1px solid #334155;
+        }
+
+        form {
+            display: flex;
+            gap: 12px;
+        }
+
+        input {
+            flex: 1;
+            min-width: 0;
+            padding: 16px;
+            border-radius: 9px;
+            border: 1px solid #475569;
+            background: #0f172a;
+            color: white;
+            outline: none;
+            font-size: 15px;
+        }
+
+        input:focus {
+            border-color: #60a5fa;
+        }
+
+        button {
+            border: none;
+            background: #2563eb;
+            color: white;
+            padding: 14px 22px;
+            border-radius: 9px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        #result {
+            display: none;
+            margin-top: 22px;
+            padding: 18px;
+            border-radius: 10px;
+            background: #0f2c27;
+            border: 1px solid #166534;
+            overflow-wrap: anywhere;
+        }
+
+        #result a {
+            display: block;
+            color: #4ade80;
+            margin: 10px 0;
+            text-decoration: none;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .secondary {
+            background: #334155;
+        }
+
+        .message {
+            color: #fca5a5;
+            margin-top: 14px;
+            font-size: 14px;
+        }
+
+        .history {
+            margin-top: 45px;
+        }
+
+        .history h2 {
+            margin-bottom: 18px;
+            font-size: 21px;
+        }
+
+        .url-item {
+            background: #1e293b;
+            border: 1px solid #334155;
+            padding: 17px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            overflow-wrap: anywhere;
+        }
+
+        .url-item a {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+
+        .url-item p {
+            color: #94a3b8;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        .empty {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 35px 15px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+            main {
+                margin-top: 35px;
+            }
+
+            form {
+                flex-direction: column;
+            }
+
+            form button {
+                width: 100%;
+            }
+
+            .card {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">Shortly.</div>
+    <a href="#history">My Links</a>
+</header>
+
+<main>
+
+    <section class="hero">
+        <h1>Shorten your <span>links.</span></h1>
+        <p>
+            Transform long URLs into short, shareable links.
+            Simple, fast and reliable.
+        </p>
+    </section>
+
+    <section class="card">
+
+        <form id="urlForm">
+            <input
+                type="url"
+                id="originalUrl"
+                placeholder="Paste your long URL here..."
+                required
+            >
+
+            <button type="submit" id="submitBtn">
+                Shorten URL →
+            </button>
+        </form>
+
+        <p class="message" id="error"></p>
+
+        <div id="result">
+            <strong>Your short URL is ready!</strong>
+
+            <a id="shortUrl" href="#" target="_blank"></a>
+
+            <div class="result-actions">
+                <button id="copyBtn" type="button">
+                    Copy link
+                </button>
+
+                <button id="openBtn" type="button" class="secondary">
+                    Open link ↗
+                </button>
+            </div>
+        </div>
+
+    </section>
+
+    <section class="history" id="history">
+        <h2>Your recent links</h2>
+        <div id="urlList">
+            <p class="empty">Loading your links...</p>
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    Built with FastAPI and PostgreSQL
+</footer>
+
+<script>
+    // Replace this with your actual Render backend URL.
+    const API_BASE = "https://url-shortener-api-g45f.onrender.com";
+
+    const form = document.getElementById("urlForm");
+    const input = document.getElementById("originalUrl");
+    const submitBtn = document.getElementById("submitBtn");
+    const errorBox = document.getElementById("error");
+    const resultBox = document.getElementById("result");
+    const shortUrlElement = document.getElementById("shortUrl");
+    const urlList = document.getElementById("urlList");
+
+    let currentShortUrl = "";
+
+    async function loadUrls() {
+        try {
+            const response = await fetch(
+                `${API_BASE}/urls/?limit=10&skip=0`
+            );
+
+            if (!response.ok) {
+                throw new Error("Could not fetch URLs");
+            }
+
+            const urls = await response.json();
+
+            urlList.innerHTML = "";
+
+            if (urls.length === 0) {
+                urlList.innerHTML =
+                    '<p class="empty">No links created yet.</p>';
+                return;
+            }
+
+            urls.forEach(url => {
+                const item = document.createElement("div");
+                item.className = "url-item";
+
+                const link = document.createElement("a");
+                link.href = url.short_url;
+                link.textContent = url.short_url;
+                link.target = "_blank";
+                link.rel = "noopener noreferrer";
+
+                const original = document.createElement("p");
+                original.textContent = url.original_url;
+
+                const clicks = document.createElement("p");
+                clicks.textContent = `Clicks: ${url.clicks}`;
+
+                item.append(link, original, clicks);
+                urlList.appendChild(item);
+            });
+
+        } catch (error) {
+            urlList.innerHTML =
+                '<p class="empty">Unable to load links. Please try again.</p>';
+            console.error(error);
+        }
+    }
+
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        errorBox.textContent = "";
+        resultBox.style.display = "none";
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Creating...";
+
+        try {
+            const response = await fetch(`${API_BASE}/urls/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    original_url: input.value.trim()
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.detail || "Unable to shorten URL"
+                );
+            }
+
+            currentShortUrl = data.short_url;
+
+            shortUrlElement.href = currentShortUrl;
+            shortUrlElement.textContent = currentShortUrl;
+
+            resultBox.style.display = "block";
+
+            input.value = "";
+
+            await loadUrls();
+
+        } catch (error) {
+            errorBox.textContent = error.message;
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Shorten URL →";
+        }
+    });
+
+    document.getElementById("copyBtn").addEventListener(
+        "click",
+        async () => {
+            try {
+                await navigator.clipboard.writeText(currentShortUrl);
+                document.getElementById("copyBtn").textContent = "Copied!";
+            } catch {
+                errorBox.textContent = "Unable to copy the link.";
+            }
+        }
+    );
+
+    document.getElementById("openBtn").addEventListener(
+        "click",
+        () => {
+            if (currentShortUrl) {
+                window.open(
+                    currentShortUrl,
+                    "_blank",
+                    "noopener,noreferrer"
+                );
+            }
+        }
+    );
+
+    loadUrls();
+</script>
+
+</body>
+</html>
