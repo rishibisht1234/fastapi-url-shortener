@@ -10,6 +10,8 @@ from app.schemas.url import URLCreate, URLUpdate, URLResponse
 from app.services.url_service import create_short_url
 from app.core.config import settings
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(title="URL Shortener API")
 app.include_router(urls.router)
 app.include_router(redirect.router)
@@ -19,3 +21,14 @@ def home():
     return {
         "message" : "URL Shortner API"
     }
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5500",
+        "https://your-site.netlify.app"
+    ],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PATCH", "DELETE"],
+    allow_headers=["Content-Type"],
+)
