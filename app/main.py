@@ -12,7 +12,8 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5500",
         "https://flourishing-quokka-33cf66.netlify.app",
-        "https://celebrated-paprenjak-9bad93.netlify.app"
+        "https://celebrated-paprenjak-9bad93.netlify.app",
+        "https://playful-dragon-9acff8.netlify.app"
     ],
     allow_credentials=False,
     allow_methods=["GET", "POST", "PATCH", "DELETE"],
