@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from app.models.url import URL
 from app.utils.short_code import generate_short_code
 
-def create_short_url(db: Session, original_url: str):
+def create_short_url(db: Session, original_url: str, user_id: int):
 
     max_attempts = 5
 
@@ -22,7 +22,8 @@ def create_short_url(db: Session, original_url: str):
 
         new_url = URL(
             original_url = original_url,
-            short_code = short_code
+            short_code = short_code,
+            user_id = user_id
         )
 
         try:
@@ -45,15 +46,16 @@ def create_short_url(db: Session, original_url: str):
     )
 
 
-def get_all_urls(db: Session, limit: int = 10, skip: int = 0):
+def get_all_urls(db: Session, user_id: int, limit: int = 10, skip: int = 0):
     
-    statement = select(URL).order_by(URL.id).limit(limit).offset(skip)
+    statement = select(URL).where(URL.user_id==user_id).order_by(URL.id.desc()).limit(limit).offset(skip)
     return db.scalars(statement).all()
 
 
-def get_url_by_id(db: Session, url_id: int):
+def get_url_by_id(db: Session, url_id: int, user_id: int):
 
-    return db.get(URL, url_id)
+    statement = select(URL).where( URL.id==url_id, URL.user_id==user_id)
+    return db.scalar(statement)
 
 
 def update_url(db: Session, url: URL, original_url: str):

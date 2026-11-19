@@ -1,9 +1,12 @@
-from fastapi import Query, APIRouter, Depends, HTTPException, status, Response
+from fastapi import Query, APIRouter, Query, Depends, HTTPException, status, Response
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
 from app.database.connections import get_db
 from app.models.url import URL
+from app.models.user import User
+from app.dependencies.auth import get_current_user
 from app.schemas.url import URLCreate, URLUpdate, URLResponse
 from app.services.url_service import (
     create_short_url,
@@ -29,11 +32,13 @@ router = APIRouter(
     )
 def create_url(
     url_data: URLCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     new_url = create_short_url(
         db = db,
-        original_url= str(url_data.original_url)
+        original_url= str(url_data.original_url),
+        user_id = current_user.id
     )
 
     return new_url
@@ -44,18 +49,19 @@ def create_url(
 def get_urls(
     limit: int = Query(default=10, ge=1, le=100),
     skip: int = Query(default=0, ge=0),
-    db: Session = Depends(get_db)):
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+    ):
 
-    urls = get_all_urls(db, limit, skip)
-
-    return urls
+    return get_all_urls(db, current_user.id, limit, skip)
+    
 
 
 
 @router.get("/{url_id}", response_model= URLResponse)
-def get_url(url_id: int, db: Session = Depends(get_db)):
+def get_url(url_id: int, db: Session = Depends(get_db), current_user : User = Depends(get_current_user)):
     
-    url = get_url_by_id(db, url_id)
+    url = get_url_by_id(db, url_id, current_user.id)
 
     if not url:
         raise HTTPException(
@@ -71,9 +77,10 @@ def get_url(url_id: int, db: Session = Depends(get_db)):
 def update_url(
     url_id : int,
     url_data : URLUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    url = get_url_by_id(db, url_id)
+    url = get_url_by_id(db, url_id, current_user.id)
 
     if not url:
         raise HTTPException(
@@ -102,9 +109,10 @@ def update_url(
 @router.delete("/{url_id}", status_code= 204)
 def delete_url(
     url_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    url = get_url_by_id(db, url_id)
+    url = get_url_by_id(db, url_id, current_user.id)
 
     if not url:
         raise HTTPException(

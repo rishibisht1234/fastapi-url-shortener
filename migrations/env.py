@@ -1,5 +1,6 @@
 from app.database.connections import Base
 from app.models.url import URL
+from app.models.user import User
 from app.core.config import settings
 
 from logging.config import fileConfig

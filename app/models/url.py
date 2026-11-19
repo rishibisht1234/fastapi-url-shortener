@@ -1,6 +1,7 @@
-from sqlalchemy import String, Integer, DateTime, func
-from sqlalchemy.orm import Mapped, mapped_column
 from datetime import datetime
+
+from sqlalchemy import ForeignKey, String, Integer, DateTime, func
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database.connections import Base
 
@@ -19,3 +20,9 @@ class URL(Base):
                                                   server_default=func.now(),
                                                   nullable=False
                                                   )
+
+    user_id : Mapped[int | None] = mapped_column(
+        ForeignKey('users.id', ondelete="SET NULL"),
+        nullable=True,
+        index= True
+    )
